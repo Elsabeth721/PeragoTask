@@ -9,7 +9,7 @@ const pool = new Pool({
   port: 5432,
   user: "postgres",
   password: "12345678",
-  database: "position_hierarchy",
+  database: "position-hierarchy",
 });
 
 export const db = drizzle(pool, { schema });

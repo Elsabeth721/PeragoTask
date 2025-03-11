@@ -1,0 +1,58 @@
+"use client";
+
+import { IconChevronDown } from "@tabler/icons-react";
+import { Group, Tree, TreeNodeData } from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPositionsTree, transformTreeToMantineTree } from '../api/positionApi';
+
+const ViewPositions = () => {
+  const {
+    data: treeData,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["positions-tree"],
+    queryFn: fetchPositionsTree,
+  });
+
+  if (isLoading) return <p>Loading positions...</p>;
+  if (isError) return <p>Error fetching positions.</p>;
+
+  const hierarchy = transformTreeToMantineTree(treeData || []);
+  console.log("Hierarchy:", JSON.stringify(hierarchy, null, 2)); // Log the hierarchy data
+
+  return (
+    <div className="p-8 bg-gray-50">
+      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+        Perago Information System Employee Hierarchy
+      </h2>
+
+      <Tree
+        data={hierarchy}
+        levelOffset={30}
+        style={{
+          backgroundColor: '#f9fafb',
+          borderRadius: '8px',
+          padding: '16px',
+        }}
+        className="mantine-Tree-node"
+        renderNode={({ node, expanded, hasChildren, elementProps }) => (
+          <Group gap={5} {...elementProps}>
+            {hasChildren && (
+              <IconChevronDown
+                size={18}
+                style={{
+                  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                  color: expanded ? '#4f46e5' : '#6b7280',
+                }}
+              />
+            )}
+            <span style={{ color: '#1e293b', fontWeight: 500 }}>{node.label}</span>
+          </Group>
+        )}
+      />
+    </div>
+  );
+};
+
+export default ViewPositions;

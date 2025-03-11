@@ -1,17 +1,34 @@
-export function buildTree(positions) {
-    const map = new Map();
-    const tree = [];
-  
-    positions.forEach((pos) => map.set(pos.id, { ...pos, children: [] }));
-  
-    positions.forEach((pos) => {
-      if (pos.parentId) {
-        map.get(pos.parentId)?.children.push(map.get(pos.id));
-      } else {
-        tree.push(map.get(pos.id));
-      }
-    });
-  
-    return tree;
-  }
-  
+export type Position = {
+  id: string;
+  name: string;
+  description: string;
+  parentId: string | null;
+};
+
+export type TreeNode = {
+  id: string;
+  name: string;
+  description: string;
+  children: TreeNode[];
+};
+
+const buildTree = (
+  positions: Position[],
+  parentId: string | null = null
+): TreeNode[] => {
+  // console.log(`Building tree for parentId: ${parentId}`);
+  const filteredPositions = positions.filter((pos) => pos.parentId === parentId);
+  // console.log("Filtered Positions:", filteredPositions);
+
+  return filteredPositions.map((pos) => {
+    const children = buildTree(positions, pos.id);
+    // console.log(`Children for ${pos.name}:`, children);
+    return {
+      id: pos.id,
+      name: pos.name,
+      description: pos.description,
+      children: children,
+    };
+  });
+};
+export default buildTree
