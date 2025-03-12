@@ -12,24 +12,23 @@ export interface Position {
 
 
 export const fetchPositions = async (): Promise<Position[]> => {
-  // console.log("Fetching positions...");
-  const response = await axios.get<Position[]>(`${API_BASE_URL}/positions`);
-  // console.log("Positions data:", response.data);
-  return response.data;
+  try{const response = await axios.get<Position[]>(`${API_BASE_URL}/positions`);
+  return response.data;}
+  catch(error){
+    throw 
+  }
 };
 
 
 export const fetchPositionChoices = async (): Promise<Position[]> => {
-  console.log("Fetching positions...");
   const response = await axios.get<Position[]>(`${API_BASE_URL}/positions/choices`);
-  // console.log("Choices data:", response.data);
   return response.data;
 };
 
 
 export const createPosition = async (data: Omit<Position, "id">): Promise<Position> => {
   try {
-    console.log("Sending payload:", data); // Log the payload
+    console.log("Sending payload:", data); 
     const response = await axios.post<Position>(`${API_BASE_URL}/positions`, data);
     return response.data;
   } catch (error) {
@@ -38,13 +37,11 @@ export const createPosition = async (data: Omit<Position, "id">): Promise<Positi
   }
 };
 
-// Update a position
 export const updatePosition = async (id: string, data: Partial<Position>): Promise<Position> => {
   const response = await axios.put<Position>(`${API_BASE_URL}/positions/${id}`, data);
   return response.data;
 };
 
-// Delete a position
 export const deletePosition = async (id: string): Promise<void> => {
   await axios.delete(`${API_BASE_URL}/positions/${id}`);
 };

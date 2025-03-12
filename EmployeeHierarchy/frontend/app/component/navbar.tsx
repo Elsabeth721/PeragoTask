@@ -16,18 +16,16 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery("(max-width: 768px)") ?? false;
   const [active, setActive] = useState("/");
 
-  // Define links correctly
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Add", path: "/pages/create" },
-    { name: "View", path: "/pages/view" }, // ✅ Corrected path
+    { name: "View", path: "/pages/view" },
+    { name: "Edit", path: "/pages/edit" }, 
   ];
 
   return (
     <nav className="bg-gray-100 shadow-md py-4 px-6 md:px-10">
-      {/* Nav Container */}
       <div className="flex items-center justify-between">
-        {/* Logo */}
         <Link href="/" className="flex-shrink-0">
           <Image
             src="/per.webp"
@@ -38,7 +36,6 @@ const Navbar: React.FC = () => {
           />
         </Link>
 
-        {/* Desktop Links */}
         {!isMobile && (
           <div className="flex gap-6">
             {navLinks.map(({ name, path }) => (
@@ -59,11 +56,9 @@ const Navbar: React.FC = () => {
           </div>
         )}
 
-        {/* Mobile Burger Menu */}
         {isMobile && <Burger opened={opened} onClick={toggle} />}
       </div>
 
-      {/* Mobile Drawer */}
       <Drawer opened={opened} onClose={close} size="75%" padding="md" title="Menu">
         <ScrollArea>
           <Divider my="sm" />
