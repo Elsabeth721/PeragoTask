@@ -1,64 +1,98 @@
-import { TreeNodeData } from "@mantine/core";
 import axios from "axios";
+import { Position, TreeNode } from "../interface/positionInterface";
+import { TreeNodeData } from "@mantine/core";
 
-const API_BASE_URL = "http://localhost:3001"; 
-
-export interface Position {
-  id: string;
-  name: string;
-  description: string;
-  parentId: string | null;
-}
-
+const API_URL = "http://localhost:3001";
 
 export const fetchPositions = async (): Promise<Position[]> => {
-  try{const response = await axios.get<Position[]>(`${API_BASE_URL}/positions`);
-  return response.data;}
-  catch(error){
-    throw 
+  try {
+    const response = await axios.get<Position[]>(`${API_URL}/positions`);
+    return response.data;
+  } catch (error) {
+    if (error && typeof error === "object" && "isAxiosError" in error) {
+      // Handle Axios error
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosError.response?.data?.message || "Failed to fetch positions.";
+      throw new Error(errorMessage);
+    }
+    throw new Error("An unexpected error occurred.");
   }
 };
 
-
 export const fetchPositionChoices = async (): Promise<Position[]> => {
-  const response = await axios.get<Position[]>(`${API_BASE_URL}/positions/choices`);
-  return response.data;
+  try {
+    const response = await axios.get<Position[]>(`${API_URL}/positions/choices`);
+    return response.data;
+  } catch (error) {
+    if (error && typeof error === "object" && "isAxiosError" in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosError.response?.data?.message || "Failed to fetch position choices.";
+      throw new Error(errorMessage);
+    }
+    throw new Error("An unexpected error occurred.");
+  }
 };
+
 
 
 export const createPosition = async (data: Omit<Position, "id">): Promise<Position> => {
   try {
-    console.log("Sending payload:", data); 
-    const response = await axios.post<Position>(`${API_BASE_URL}/positions`, data);
+    const response = await axios.post<Position>(`${API_URL}/positions`, data);
     return response.data;
   } catch (error) {
-    console.error("Error creating position:", error);
-    throw error;
+    if (error && typeof error === "object" && "isAxiosError" in error) {
+      const axiosError = error as { response?: { status: number; data: any } };
+      if (axiosError.response?.status === 400 && axiosError.response.data?.errors) {
+        const validationErrors = axiosError.response.data.errors
+          .map((err: { field: string; message: string }) => `${err.field}: ${err.message}`)
+          .join("\n");
+        throw new Error(validationErrors);
+      } else {
+        throw new Error(axiosError.response?.data?.message || "Failed to create position.");
+      }
+    }
+    throw new Error("An unexpected error occurred.");
+  }
+}
+export const updatePosition = async (id: string, data: Partial<Position>): Promise<Position> => {
+  try {
+    const response = await axios.put<Position>(`${API_URL}/positions/${id}`, data);
+    return response.data;
+  } catch (error) {
+    if (error && typeof error === "object" && "isAxiosError" in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosError.response?.data?.message || "Failed to update position.";
+      throw new Error(errorMessage);
+    }
+    throw new Error("An unexpected error occurred.");
   }
 };
 
-export const updatePosition = async (id: string, data: Partial<Position>): Promise<Position> => {
-  const response = await axios.put<Position>(`${API_BASE_URL}/positions/${id}`, data);
-  return response.data;
-};
-
 export const deletePosition = async (id: string): Promise<void> => {
-  await axios.delete(`${API_BASE_URL}/positions/${id}`);
+  try {
+    await axios.delete(`${API_URL}/positions/${id}`);
+  } catch (error) {
+    if (error && typeof error === "object" && "isAxiosError" in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosError.response?.data?.message || "Failed to delete position.";
+      throw new Error(errorMessage);
+    }
+    throw new Error("An unexpected error occurred.");
+  }
 };
-
-
-
-interface TreeNode {
-  id: string;
-  name: string;
-  description: string;
-  children: TreeNode[];
-}
 
 export const fetchPositionsTree = async (): Promise<TreeNode[]> => {
-  const response = await axios.get<TreeNode[]>(`${API_BASE_URL}/positions/tree`);
-  console.log("API Response (Tree):", response.data); // Log the API response
-  return response.data;
+  try {
+    const response = await axios.get<TreeNode[]>(`${API_URL}/positions/tree`);
+    return response.data;
+  } catch (error) {
+    if (error && typeof error === "object" && "isAxiosError" in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosError.response?.data?.message || "Failed to fetch positions tree.";
+      throw new Error(errorMessage);
+    }
+    throw new Error("An unexpected error occurred.");
+  }
 };
 
 export const transformTreeToMantineTree = (nodes: TreeNode[]): TreeNodeData[] => {
@@ -69,3 +103,4 @@ export const transformTreeToMantineTree = (nodes: TreeNode[]): TreeNodeData[] =>
     children: transformTreeToMantineTree(node.children),
   }));
 };
+

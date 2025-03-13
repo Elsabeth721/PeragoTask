@@ -10,70 +10,121 @@ import {
   updatePosition,
   getChoices
 } from "../service/PositionService.js";
+import { z } from "zod";
+
 
 
 export const createController = async (c: Context) => {
   try {
     const body = await c.req.json();
-    console.log("Received payload:", body);
-    const validated = positionSchema.parse(body);
-    console.log("------", validated)
-
-    // Call the service method to insert into the database
-    const position = await createPosition(validated);
-    return c.json(position, 201);
+    const validated = positionSchema.parse(body); // Validate the request body
+    const position = await createPosition(validated); // Create the position
+    return c.json(position, 201); 
   } catch (error) {
-    console.error("Error in createController:", error);
-    if (error instanceof HTTPException) {
-      throw error;
+    if (error instanceof z.ZodError) {
+      return c.json(
+        {
+          message: "Validation failed",
+          errors: error.errors.map((e) => ({
+            field: e.path.join("."),
+            message: e.message,
+          })),
+        },
+        400 
+      );
+    } else if (error instanceof Error) {
+      // Handle other errors
+      throw new HTTPException(500, { message: error.message });
     }
-    throw new HTTPException(500, { message: "Internal Server Error", cause: error });
+    throw new HTTPException(500, { message: "Unknown error" });
   }
 };
 
 export const updateController = async (c: Context) => {
-  const id = c.req.param("id");
-  const body = await c.req.json();
-  const position = await updatePosition(id, body);
-  if (!position) throw new HTTPException(404, { message: "Position not found" });
-  return c.json(position);
+  try {
+    const id = c.req.param("id");
+    const body = await c.req.json();
+    const position = await updatePosition(id, body);
+    return c.json(position);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(500, { message: error.message });
+    }
+    throw new HTTPException(500, { message: "Unknown error" });
+  }
 };
 
 export const getByIdController = async (c: Context) => {
-  const id = c.req.param("id");
-  const position = await getByIdPosition(id);
-  if (!position) throw new HTTPException(404, { message: "Not found" });
-  return c.json(position);
+  try {
+    const id = c.req.param("id");
+    const position = await getByIdPosition(id);
+    return c.json(position);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(404, { message: error.message });
+    }
+    throw new HTTPException(500, { message: "Unknown error" });
+  }
 };
 
 export const getAllController = async (c: Context) => {
-  const tree = await getPositionsTree();
-  return c.json(tree);
+  try {
+    const tree = await getPositionsTree();
+    return c.json(tree);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(500, { message: error.message });
+    }
+    throw new HTTPException(500, { message: "Unknown error" });
+  }
 };
 
 export const getChildrenController = async (c: Context) => {
-  const id = c.req.param("id");
-  const children = await getChildrenPosition(id);
-  return c.json(children);
+  try {
+    const id = c.req.param("id");
+    const children = await getChildrenPosition(id);
+    return c.json(children);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(404, { message: error.message });
+    }
+    throw new HTTPException(500, { message: "Unknown error" });
+  }
 };
 
 export const deleteController = async (c: Context) => {
-  const id = c.req.param("id");
-  const deleted = await deletePosition(id);
-  if (!deleted) throw new HTTPException(404, { message: "Position not found" });
-  return c.json({ message: "Deleted" });
+  try {
+    const id = c.req.param("id");
+    const deleted = await deletePosition(id);
+    return c.json({ message: "Deleted" });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(500, { message: error.message });
+    }
+    throw new HTTPException(500, { message: "Unknown error" });
+  }
 };
-
 
 export const getChoicesController = async (c: Context) => {
-  const choices = await getChoices()
-  if (!choices) throw new HTTPException(404, { message: "Position not found" });
-  return c.json(choices);
+  try {
+    const choices = await getChoices();
+    return c.json(choices);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(404, { message: error.message });
+    }
+    throw new HTTPException(500, { message: "Unknown error" });
+  }
 };
 
-
-export const getPositionsTreeController = async (c:Context)=>{
-  const tree = await getPositionsTree();
-  if (!tree) throw new HTTPException(404, { message: "Position treee not done" });
-  return c.json(tree);
-}
+export const getPositionsTreeController = async (c: Context) => {
+  try {
+    const tree = await getPositionsTree();
+    return c.json(tree);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(500, { message: error.message });
+    }
+    throw new HTTPException(500, { message: "Unknown error" });
+  }
+};

@@ -1,4 +1,8 @@
 @import "tailwindcss";
+.mantine-Notification-root {
+  z-index: 9999 !important; /* Make sure it's above everything */
+  position: fixed !important; /* Keep it outside */
+}
 
 :root {
   --background: #ffffff;

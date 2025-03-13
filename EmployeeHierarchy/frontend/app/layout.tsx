@@ -6,6 +6,7 @@ import { MantineProvider } from "@mantine/core";
 import Providers from "./provider/Provider";
 import Navbar from "./component/navbar";
 import Footer from "./component/Fotter";
+import { Notifications } from "@mantine/notifications";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,13 +33,16 @@ function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-       <Providers>
+        <Providers>
+          <MantineProvider>{" "}
+            <Notifications position="top-right" />{" "}
+          </MantineProvider>{" "}
           <Navbar />
           {children}
-          <Footer/>
+          <Footer />
         </Providers>
       </body>
     </html>
   );
 }
-export default  RootLayout
+export default RootLayout;
