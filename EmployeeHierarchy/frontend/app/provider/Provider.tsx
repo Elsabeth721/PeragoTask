@@ -9,12 +9,12 @@ const queryClient = new QueryClient();
  function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider >
-      <Notifications
-  position="top-left"
+      {/* <MantineProvider > */}
+      {/* <Notifications */}
+  {/* position="top-left" */}
   
-/>        {children}
-      </MantineProvider>
+      {children}
+      {/* </MantineProvider> */}
     </QueryClientProvider>
   );
 }

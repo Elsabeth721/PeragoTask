@@ -16,7 +16,6 @@ const buildTree = (
   positions: Position[],
   parentId: string | null = null
 ): TreeNode[] => {
-  // console.log(`Building tree for parentId: ${parentId}`);
   const filteredPositions = positions.filter((pos) => pos.parentId === parentId);
   // console.log("Filtered Positions:", filteredPositions);
 

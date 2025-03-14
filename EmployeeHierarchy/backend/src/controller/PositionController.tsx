@@ -10,33 +10,14 @@ import {
   updatePosition,
   getChoices
 } from "../service/PositionService.js";
-import { z } from "zod";
-
-
 
 export const createController = async (c: Context) => {
   try {
     const body = await c.req.json();
-    const validated = positionSchema.parse(body); // Validate the request body
-    const position = await createPosition(validated); // Create the position
+    const position = await createPosition(body); 
     return c.json(position, 201); 
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json(
-        {
-          message: "Validation failed",
-          errors: error.errors.map((e) => ({
-            field: e.path.join("."),
-            message: e.message,
-          })),
-        },
-        400 
-      );
-    } else if (error instanceof Error) {
-      // Handle other errors
+  } catch (error:Error | any) {
       throw new HTTPException(500, { message: error.message });
-    }
-    throw new HTTPException(500, { message: "Unknown error" });
   }
 };
 
@@ -54,6 +35,19 @@ export const updateController = async (c: Context) => {
   }
 };
 
+export const deleteController = async (c: Context) => {
+  try {
+    const id = c.req.param("id");
+    const deleted = await deletePosition(id);
+    return c.json({ message: "Deleted successfully", deleted });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(500, { message: error.message });
+    }
+    throw new HTTPException(500, { message: "Unknown error" });
+  }
+};
+
 export const getByIdController = async (c: Context) => {
   try {
     const id = c.req.param("id");
@@ -63,7 +57,7 @@ export const getByIdController = async (c: Context) => {
     if (error instanceof Error) {
       throw new HTTPException(404, { message: error.message });
     }
-    throw new HTTPException(500, { message: "Unknown error" });
+    throw new HTTPException(500, { message: "Unknown error........." });
   }
 };
 
@@ -92,19 +86,7 @@ export const getChildrenController = async (c: Context) => {
   }
 };
 
-export const deleteController = async (c: Context) => {
-  try {
-    const id = c.req.param("id");
-    const deleted = await deletePosition(id);
-    return c.json({ message: "Deleted" });
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new HTTPException(500, { message: error.message });
-    }
-    throw new HTTPException(500, { message: "Unknown error" });
-  }
-};
-
+// for the tree part to build tree....
 export const getChoicesController = async (c: Context) => {
   try {
     const choices = await getChoices();

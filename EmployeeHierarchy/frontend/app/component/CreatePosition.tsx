@@ -1,72 +1,79 @@
-"use client"; 
+ "use client"; 
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchPositionChoices, createPosition } from "../api/positionApi";
-import { notifications } from "@mantine/notifications";
+import { Button } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 
 const CreatePosition = () => {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [parentId, setParentId] = useState("");
-
+  const [position, setPosition] = useState({
+    name:"",
+    description:"", parentId:""
+  })
+  // const [name, setName] = useState("");
+  // const [description, setDescription] = useState("");
+  // const [parentId, setParentId] = useState("");
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); 
   const queryClient = useQueryClient();
 
   const { data: positions, isLoading: isFetching } = useQuery({
     queryKey: ["choices"],
     queryFn: fetchPositionChoices,
   });
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // State to control modal
+
 
   const mutation = useMutation({
     mutationFn: createPosition,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["choices"] });
-      notifications.show({
-        title: "Success",
-        message: "Position created successfully!",
+      // setMessage("Position added successfully!");
+      showNotification({
+        title: "Create Position",
+        message: "Position successfully added",
         color: "green",
-        autoClose: 5000,
-        withCloseButton: true,
       });
-
-      setName("");
-      setDescription("");
-      setParentId("");
+      setPosition({
+        name:"",description:"", parentId:""
+      })
+      // setName("");
+      // setDescription("");
+      // setParentId("");
+      // setErrorMessage(""); 
     },
-    onError: (error: Error) => {
-      notifications.show({
-        title: "Failure",
-        message: error.message || "Failed to add position.",
+    // onError: (error: Error) => {
+    //   console.log('here is the error ',error.message)
+    //   setErrorMessage(error.message || "Failed to add position."); 
+    //   setMessage("");
+    // },
+    onError:(error: Error)=>{
+      showNotification({
+        title: "Creating Position Failed",
+        message: error.message || "Failed to Create Position",
         color: "red",
-        autoClose: 5000,
-        withCloseButton: true,
-      });
-    },
+      })
+    }
   });
 
   const handleAddPosition = async () => {
-    if (!name) {
-      notifications.show({
-        title: "Warning",
-        message: "Position name is required.",
-        color: "yellow",
-        autoClose: 1500,
-        withCloseButton: true,
-      });
+    if (!position.name) {
+      setErrorMessage("Position name is required.");
       return;
     }
 
     const newPosition = {
-      name,
-      description,
-      parentId: parentId || null,
+      name: position.name,
+      description: position.description,
+      parentId: position.parentId || "", 
     };
 
     mutation.mutate(newPosition);
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-50 ">
+    <div className="flex justify-center items-center  bg-gray-100 p-5">
       <div className="bg-white shadow-lg rounded-2xl overflow-hidden flex max-w-4xl w-full">
         <div className="w-1/2 hidden md:block">
           <img
@@ -80,27 +87,27 @@ const CreatePosition = () => {
           <h2 className="text-2xl font-semibold text-center mb-4 text-gray-700">
             Add New Position
           </h2>
-
+          
           <div className="space-y-4">
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={position.name}
+              onChange={(e) => setPosition((pos) => ({ ...pos, name: e.target.value }))}
               placeholder="Position Name"
               className="w-full px-4 py-3 rounded-lg bg-gray-100 transition outline-none"
             />
-
+            
             <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={position.description}
+              onChange={(e) => setPosition((pos) => ({ ...pos, description: e.target.value }))}
               placeholder="Description (optional)"
-              className="w-full px-4 py-3 rounded-lg bg-gray-100 outline-none transition resize-none"
+              className="w-full px-4 py-3 rounded-lg bg-gray-100 outline-none  transition resize-none"
               rows={3}
             ></textarea>
 
-            <select
-              value={parentId}
-              onChange={(e) => setParentId(e.target.value)}
+            <select 
+              value={position.parentId}
+              onChange={(e) => setPosition((pos) => ({ ...pos, parentId: e.target.value }))}
               className="w-full px-4 py-3 rounded-lg bg-gray-100 outline-none transition"
             >
               <option value="">No Parent (Top-level Position)</option>
@@ -111,13 +118,18 @@ const CreatePosition = () => {
               ))}
             </select>
 
-            <button
+            <Button
               onClick={handleAddPosition}
-              className="w-full bg-green-500 text-white font-semibold py-3 rounded-lg transition ease-in "
+              className="w-full bg-green-500 text-white font-semibold py-3 rounded-lg transition ease-in"
               disabled={mutation.isPending}
             >
               {mutation.isPending ? "Adding..." : "Add Position"}
-            </button>
+            </Button>
+
+            {message && <p className="text-green-500 text-center">{message}</p>}
+            {errorMessage && (
+              <p className="text-red-500 text-center whitespace-pre-line">{errorMessage}</p>
+            )}
           </div>
         </div>
       </div>

@@ -1,31 +1,26 @@
 "use client";
+
 import { useState } from "react";
-import {
-  Burger,
-  Drawer,
-  Divider,
-  ScrollArea,
-  Anchor,
-} from "@mantine/core";
-import { useDisclosure, useMediaQuery } from "@mantine/hooks";
+import { Burger, Container, Group } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 import Image from "next/image";
 
 const Navbar: React.FC = () => {
-  const [opened, { toggle, close }] = useDisclosure(false);
-  const isMobile = useMediaQuery("(max-width: 768px)") ?? false;
+  const [opened, { toggle }] = useDisclosure(false);
   const [active, setActive] = useState("/");
 
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Add", path: "/pages/create" },
     { name: "View", path: "/pages/view" },
-    { name: "Edit", path: "/pages/edit" }, 
+    { name: "Edit", path: "/pages/edit" },
   ];
 
   return (
-    <nav className="bg-gray-100 shadow-md py-4 px-6 md:px-10">
-      <div className="flex items-center justify-between">
+    <header className="bg-gray-100 shadow-md py-4 px-6 md:px-10">
+      <Container size="md" className="flex justify-between items-center">
+        {/* Logo Section */}
         <Link href="/" className="flex-shrink-0">
           <Image
             src="/per.webp"
@@ -36,54 +31,62 @@ const Navbar: React.FC = () => {
           />
         </Link>
 
-        {!isMobile && (
-          <div className="flex gap-6">
-            {navLinks.map(({ name, path }) => (
-              <Anchor
-                key={path}
-                component={Link}
-                href={path}
-                onClick={() => setActive(path)}
-                className={`px-4 py-2 rounded-lg transition ease-in ${
-                  active === path
-                    ? "bg-[#2f9e44] text-white"
-                    : "text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {name}
-              </Anchor>
-            ))}
-          </div>
-        )}
-
-        {isMobile && <Burger opened={opened} onClick={toggle} />}
-      </div>
-
-      <Drawer opened={opened} onClose={close} size="75%" padding="md" title="Menu">
-        <ScrollArea>
-          <Divider my="sm" />
+        {/* Desktop Navigation Links */}
+        <Group gap={10} className="hidden md:flex">
           {navLinks.map(({ name, path }) => (
-            <Anchor
+            <Link
               key={path}
-              component={Link}
               href={path}
-              onClick={() => {
-                setActive(path);
-                close();
-              }}
-              className={`block py-2 px-4 rounded-lg transition ease-in ${
+              onClick={() => setActive(path)}
+              className={`px-4 py-2 rounded-lg transition ease-in ${
                 active === path
                   ? "bg-[#2f9e44] text-white"
-                  : "text-[#2f9e44] hover:bg-gray-200"
+                  : "text-gray-700 hover:bg-gray-200"
               }`}
             >
               {name}
-            </Anchor>
+            </Link>
           ))}
-          <Divider my="sm" />
-        </ScrollArea>
-      </Drawer>
-    </nav>
+        </Group>
+
+        {/* Mobile Burger Icon */}
+        <Burger opened={opened} onClick={toggle} hiddenFrom="md" size="sm" />
+      </Container>
+
+      {/* Drawer for Mobile Navigation */}
+      {opened && (
+        <div className="md:hidden absolute top-0 left-0 w-full h-full bg-white shadow-lg z-10 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <Link href="/" className="flex-shrink-0">
+              <Image
+                src="/per.webp"
+                alt="Perago Logo"
+                width={150}
+                height={150}
+                priority
+              />
+            </Link>
+            <Burger opened={opened} onClick={toggle} size="sm" />
+          </div>
+          <div className="flex flex-col gap-4">
+            {navLinks.map(({ name, path }) => (
+              <Link
+                key={path}
+                href={path}
+                onClick={() => setActive(path)}
+                className={`block py-2 px-4 rounded-lg transition ease-in ${
+                  active === path
+                    ? "bg-[#2f9e44] text-white"
+                    : "text-[#2f9e44] hover:bg-gray-200"
+                }`}
+              >
+                {name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 

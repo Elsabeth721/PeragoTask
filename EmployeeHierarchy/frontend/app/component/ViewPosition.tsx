@@ -5,8 +5,9 @@ import { Group, Tree, TreeNodeData } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchPositionsTree,
-  transformTreeToMantineTree,
 } from "../api/positionApi";
+import {  transformTreeToMantineTree,
+} from '../interface/positionInterface'
 
 const ViewPositions = () => {
   const {
