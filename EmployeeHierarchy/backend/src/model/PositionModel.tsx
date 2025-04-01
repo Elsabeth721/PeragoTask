@@ -1,6 +1,6 @@
 import { pgTable, uuid, varchar, text } from "drizzle-orm/pg-core";
 import { db } from "../config/drizzle.js";
-import { eq , isNull} from "drizzle-orm";
+import { eq , isNull, count} from "drizzle-orm";
 import { positions } from "../databaseSchema/schema.js";
 
 export const checkRootPositionExists = async (): Promise<boolean> => {
@@ -91,3 +91,11 @@ export const getChildrenPositions = async (parentId: string) => {
         .where(eq(positions.parentId, parentId));
 };
 
+export const getPagination = async (limit: number, offset: number) => {
+  return await db.select().from(positions).limit(limit).offset(offset);
+};
+
+export const getTotalCount = async () => {
+  return await db.select({ count: count() }).from(positions)
+  // return await db.select({ count: db.fn.count(positions.id) }).from(positions);
+};

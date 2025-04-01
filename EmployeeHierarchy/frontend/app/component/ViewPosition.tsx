@@ -1,72 +1,47 @@
-"use client";
+"use client"
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchPositionsPagination } from '../api/positionApi';
+import { keepPreviousData } from '@tanstack/react-query';
 
-import { IconChevronDown } from "@tabler/icons-react";
-import { Group, Tree, TreeNodeData } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
-import {
-  fetchPositionsTree,
-} from "../api/positionApi";
-import {  transformTreeToMantineTree,
-} from '../interface/positionInterface'
+const PositionsList = () => {
+  const [page, setPage] = useState(1);
+  const limit = 5;
 
-const ViewPositions = () => {
-  const {
-    data: treeData,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["positions-tree"],
-    queryFn: fetchPositionsTree,
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['positions', page],
+    queryFn: () => fetchPositionsPagination(page, limit),
+    placeholderData: keepPreviousData,
+    retry: false, 
   });
 
-  if (isLoading) return <p>Loading positions...</p>;
-  if (isError) return <p>Error fetching positions.</p>;
+  // console.log("Pagination Data:", data);
+  // console.log("Total Pages:", data?.meta?.totalPages);
+  // console.log("Current Page:", page);
+  // console.log("Data Length:", data?.data?.length);
 
-  const hierarchy = transformTreeToMantineTree(treeData || []);
-  // console.log("Hierarchy:", JSON.stringify(hierarchy, null, 2)); 
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="p-8 bg-gray-50">
-      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
-        Perago Information System Employee Hierarchy
-      </h2>
+    <div>
+      <h2>Positions</h2>
+      <ul>
+        {data && data.data.map((pos) => (
+          <li key={pos.id}>{pos.name}</li>
+        ))}
+      </ul>
 
-      <Tree
-        data={hierarchy}
-        levelOffset={30}
-        style={{
-          backgroundColor: "#f9fafb",
-          borderRadius: "8px",
-          padding: "16px",
-        }}
-        className="custom-tree"
-        renderNode={({ node, expanded, hasChildren, elementProps, level }) => (
-          <Group
-            gap={5}
-            {...elementProps}
-            style={{
-              paddingLeft: `${level * 20}px`,
-              transition: "padding-left 0.2s ease",
-            }}
-          >
-            {hasChildren && (
-              <IconChevronDown
-                size={18}
-                style={{
-                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                  color: expanded ? "#4f46e5" : "#6b7280",
-                }}
-              />
-            )}
-            <span style={{ color: "#1e293b", fontWeight: 500 }}>
-              {node.label}
-            </span>
-          </Group>
-        )}
-      />
+      <button disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</button>
+      <span> Page {page} of {data && data.meta.totalPages} </span>
+      <button 
+        disabled={page >= (data?.meta?.totalPages || 1)}
+        onClick={() => setPage(page + 1)}
+      >
+        Next
+      </button>
     </div>
   );
 };
 
-export default ViewPositions;
+export default PositionsList;

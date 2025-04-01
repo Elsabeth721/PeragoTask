@@ -1,6 +1,14 @@
-"use client"
-import { IconChevronDown, IconPlus } from "@tabler/icons-react"; // Import the plus icon
-import { Group, Tree, TextInput, Textarea, Button, Modal } from "@mantine/core";
+"use client";
+import { IconChevronDown, IconPlus } from "@tabler/icons-react";
+import {
+  Group,
+  Tree,
+  TextInput,
+  Textarea,
+  Button,
+  Modal,
+  Select,
+} from "@mantine/core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showNotification, Notifications } from "@mantine/notifications";
 import {
@@ -9,38 +17,44 @@ import {
   deletePosition,
   fetchPositionChoices,
 } from "../api/positionApi";
-import { transformTreeToMantineTree } from '../interface/positionInterface';
+import {
+  ExtendedTreeNodeData,
+  transformTreeToMantineTree,
+} from "../interface/positionInterface";
 import { useState } from "react";
 import { Position } from "../interface/positionInterface";
-import CreatePosition from './CreatePosition';  
-
-interface ExtendedTreeNodeData {
-  parentId: string;
-  value: string;
-  label: string;
-  description?: string;
-  children?: ExtendedTreeNodeData[];
-}
+import CreatePosition from "./CreatePosition";
 
 const EditPositions = () => {
   const queryClient = useQueryClient();
-  const [selectedNode, setSelectedNode] = useState<ExtendedTreeNodeData | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", description: "", parentId: "" });
-  const [isModalOpen, setIsModalOpen] = useState(false);// for delete
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // for create 
+  const [selectedNode, setSelectedNode] = useState<ExtendedTreeNodeData | null>(
+    null
+  );
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    parentId: "",
+  });
+  const [isModalOpen, setIsModalOpen] = useState(false); // for delete......Modal
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // for create......Modal
 
   const { data: positions } = useQuery({
     queryKey: ["choices"],
     queryFn: fetchPositionChoices,
   });
 
-  const { data: treeData, isLoading, isError } = useQuery({
+  const {
+    data: treeData,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["positions-tree"],
     queryFn: fetchPositionsTree,
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Position> }) => updatePosition(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Position> }) =>
+      updatePosition(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["positions-tree"] });
       setSelectedNode(null);
@@ -120,16 +134,16 @@ const EditPositions = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       <Notifications />
-      <div className="flex justify-between items-center p-4 bg-white shadow-sm">
+      <div className="flex justify-between items-center p-4 bg-gray-50 shadow-sm">
         <h2 className="text-3xl font-bold text-center text-gray-800">
           Perago Information System Employee Hierarchy
         </h2>
         <Button
-          onClick={() => setIsCreateModalOpen(true)} 
+          onClick={() => setIsCreateModalOpen(true)}
           color="green"
           className="bg-green-500 hover:bg-green-600 text-white p-3 rounded-full"
         >
-          <IconPlus size={24} color="white" /> 
+          <IconPlus size={24} color="white" />
         </Button>
       </div>
 
@@ -139,8 +153,14 @@ const EditPositions = () => {
             <Tree
               data={hierarchy}
               levelOffset={30}
-              className="custom-tree p-4 bg-white rounded-lg shadow-sm"
-              renderNode={({ node, expanded, hasChildren, elementProps, level }) => (
+              className="custom-tree p-4 bg-white rounded-lg shadow-sm w-1/2"
+              renderNode={({
+                node,
+                expanded,
+                hasChildren,
+                elementProps,
+                level,
+              }) => (
                 <Group
                   gap={5}
                   {...elementProps}
@@ -161,7 +181,9 @@ const EditPositions = () => {
                     />
                   )}
                   <span
-                    onClick={() => handleNodeClick(node as ExtendedTreeNodeData)}
+                    onClick={() =>
+                      handleNodeClick(node as ExtendedTreeNodeData)
+                    }
                     className="text-gray-800 font-medium cursor-pointer"
                   >
                     {node.label}
@@ -179,20 +201,25 @@ const EditPositions = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-600 font-medium mb-1">Name</label>
+                  <label className="block text-gray-600 font-medium mb-1">
+                    Name
+                  </label>
                   <TextInput
                     value={editForm.name}
                     onChange={(e) =>
                       setEditForm({ ...editForm, name: e.target.value })
                     }
                     classNames={{
-                      input: "w-full border border-gray-300 rounded-md px-3 py-2 outline-none",
+                      input:
+                        "w-full border border-gray-300 rounded-md px-3 py-2 outline-none",
                     }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-600 font-medium mb-1">Description</label>
+                  <label className="block text-gray-600 font-medium mb-1">
+                    Description
+                  </label>
                   <Textarea
                     value={editForm.description}
                     onChange={(e) =>
@@ -208,7 +235,7 @@ const EditPositions = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, parentId: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg bg-gray-100 outline-none transition"
+                    className="w-full px-4 py-3 rounded-lg border-1 border-blue-100 outline-none transition"
                   >
                     <option value="">No Parent (Top-level Position)</option>
                     {positions?.map((pos) => (
@@ -261,10 +288,18 @@ const EditPositions = () => {
       >
         <p>Are you sure you want to delete this position?</p>
         <div className="flex justify-end gap-3 mt-5">
-          <Button onClick={() => setIsModalOpen(false)} color="green" className="bg-gray-500 text-white">
+          <Button
+            onClick={() => setIsModalOpen(false)}
+            color="green"
+            className="bg-gray-500 text-white"
+          >
             Cancel
           </Button>
-          <Button onClick={confirmDelete} color="red" className="bg-red-500 text-white">
+          <Button
+            onClick={confirmDelete}
+            color="red"
+            className="bg-red-500 text-white"
+          >
             Delete
           </Button>
         </div>
@@ -274,3 +309,23 @@ const EditPositions = () => {
 };
 
 export default EditPositions;
+
+{
+  /* <Select
+                                label="Select Parent"
+                                placeholder="Select Parent"
+                                data={
+                                  positions?.map((pos) => ({
+                                    value: pos.parentId || "",
+                                    label: pos.name,
+                                  })) || []
+                                }
+                                defaultValue="React"
+                                onChange={(value: any) => {
+                                  setEditForm((pos) => ({ ...pos, parentId: value || "" }));
+                                }}
+                                clearable
+                                searchable
+                                style={{ width: "full"}}
+                              /> */
+}

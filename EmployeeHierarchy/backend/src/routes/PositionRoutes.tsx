@@ -1,10 +1,11 @@
 import { Hono } from "hono";
-import { createController, deleteController, getAllController, getByIdController, getChildrenController, updateController,  getChoicesController, getPositionsTreeController} from "../controller/PositionController.js";
+import { createController, deleteController, getAllController, getByIdController, getChildrenController, updateController,  getChoicesController, getPositionsTreeController, getPaginationController} from "../controller/PositionController.js";
 import { zValidator } from "@hono/zod-validator";
 import { positionSchema } from "../validator/zodvalidator.js";
 import { HTTPException } from "hono/http-exception";
 
 const positionRoutes = new Hono()
+.get('/pagination', getPaginationController)
 .get("/choices", getChoicesController)
 .get("/tree", getPositionsTreeController)
 .post("/",
@@ -20,6 +21,6 @@ createController)
 .get("/:id", getByIdController)
 .get("/", getAllController)
 .get("/:id/children", getChildrenController)
-.delete("/:id", deleteController);
+.delete("/:id", deleteController)
 
 export default positionRoutes;

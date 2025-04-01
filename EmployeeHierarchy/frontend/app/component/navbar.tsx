@@ -20,7 +20,6 @@ const Navbar: React.FC = () => {
   return (
     <header className="bg-gray-100 shadow-md py-4 px-6 md:px-10">
       <Container size="md" className="flex justify-between items-center">
-        {/* Logo Section */}
         <Link href="/" className="flex-shrink-0">
           <Image
             src="/per.webp"
@@ -31,7 +30,6 @@ const Navbar: React.FC = () => {
           />
         </Link>
 
-        {/* Desktop Navigation Links */}
         <Group gap={10} className="hidden md:flex">
           {navLinks.map(({ name, path }) => (
             <Link
@@ -49,11 +47,9 @@ const Navbar: React.FC = () => {
           ))}
         </Group>
 
-        {/* Mobile Burger Icon */}
         <Burger opened={opened} onClick={toggle} hiddenFrom="md" size="sm" />
       </Container>
 
-      {/* Drawer for Mobile Navigation */}
       {opened && (
         <div className="md:hidden absolute top-0 left-0 w-full h-full bg-white shadow-lg z-10 p-6">
           <div className="flex justify-between items-center mb-4">
@@ -71,9 +67,9 @@ const Navbar: React.FC = () => {
           <div className="flex flex-col gap-4">
             {navLinks.map(({ name, path }) => (
               <Link
-                key={path}
-                href={path}
-                onClick={() => setActive(path)}
+              key={path}
+              href={path}
+              onClick={() => setActive(path)}
                 className={`block py-2 px-4 rounded-lg transition ease-in ${
                   active === path
                     ? "bg-[#2f9e44] text-white"

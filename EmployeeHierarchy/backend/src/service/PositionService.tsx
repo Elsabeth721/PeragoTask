@@ -1,4 +1,4 @@
-import { create, deleteModel, getAll, getById, getChildren, update, getAllChoices, getAllPositions, 
+import { create, deleteModel, getAll, getById, getChildren, update, getAllChoices, getAllPositions, getTotalCount, getPagination
   // checkRootPositionExists, checkParentPositionExists, getPositionLevel
  } from "../model/PositionModel.js";
 import buildTree, { type Position } from "../utility/buildTree.js";
@@ -108,10 +108,13 @@ export const deletePosition = async (id: string) => {
 
   const children = await getChildren(id);
   // db.select().from(positions).where(eq(positions.parentId, id));
-
-  if (children.length > 0) {
+  if (children.length==0){
+      return deleteModel(id);
+  }
+  else if (children.length > 0) {
     throw new Error("Cannot delete a position that has subordinates, remove them first.");
   }
+  
 
   return deleteModel(id);
 };
@@ -144,21 +147,17 @@ const checkParentPositionExists = async (parentId: string): Promise<boolean> => 
   return !!parentPosition
 };
 
-
 export const updatePosition = async (id: string, data: {
   name?: string;
   description?: string;
   parentId?: string | null;
 }) => {
+
+
   if (data.parentId === null) {
     const rootExists = await checkRootPositionExists();
     if (rootExists) {
       const [existingRoot] = await getById(id);
-      //  await db
-      //   .select()
-      //   .from(positions)
-      //   .where(isNull(positions.parentId))
-      //   .limit(1);
 
       if (existingRoot && existingRoot.id !== id) {
         throw new Error("A root position already exists. Only one root position is allowed.");
@@ -166,13 +165,10 @@ export const updatePosition = async (id: string, data: {
     }
   }
 
-  // lower hierarchy check 
   if (data.parentId) {
-    const parentHierarchyLevel = await getPositionLevel(data.parentId);
-    const currentHierarchyLevel = await getPositionLevel(id);
-    
-    if (parentHierarchyLevel > currentHierarchyLevel) {
-      throw new Error("Cannot move a position to a lower-level position.");
+    const isDescendant = await checkIfDescendant(id, data.parentId);
+    if (isDescendant) {
+      throw new Error("Cannot move a position under its own child or descendent.");
     }
   }
 
@@ -182,27 +178,84 @@ export const updatePosition = async (id: string, data: {
   });
 };
 
-// Get the level 
-export const getPositionLevel = async (id: string): Promise<number> => {
-  let level = 0;
-  let parent = await getById(id);
-  // db
-  //   .select()
-  //   .from(positions)
-  //   .where(eq(positions.id, id))
-  //   .limit(1);
+export const checkIfDescendant = async (id: string, newParentId: string): Promise<boolean> => {
+  let parent = await getById(newParentId);
 
-  while (parent[0]?.parentId) {
-    level++;
-    parent = await getById(parent[0].parentId);
-    // db
-    //   .select()
-    //   .from(positions)
-    //   .where(eq(positions.id, parent[0].parentId))
-    //   .limit(1);
+  if (newParentId === id){
+    return true;
   }
 
-  return level;
+  while (parent[0]?.parentId) {
+    if (parent[0].parentId === id) {
+      return true; 
+    }
+    parent = await getById(parent[0].parentId);
+  }
+
+  return false; 
 };
+
+
+
+// export const updatePosition = async (id: string, data: {
+//   name?: string;
+//   description?: string;
+//   parentId?: string | null;
+// }) => {
+//   if (data.parentId === null) {
+//     const rootExists = await checkRootPositionExists();
+//     if (rootExists) {
+//       const [existingRoot] = await getById(id);
+//       //  await db
+//       //   .select()
+//       //   .from(positions)
+//       //   .where(isNull(positions.parentId))
+//       //   .limit(1);
+
+//       if (existingRoot && existingRoot.id !== id) {
+//         throw new Error("A root position already exists. Only one root position is allowed.");
+//       }
+//     }
+//   }
+
+//   // if lower hierarchy  no move
+//   if (data.parentId) {
+//     const parentHierarchyLevel = await getPositionLevel(data.parentId);
+//     const currentHierarchyLevel = await getPositionLevel(id);
+    
+//     if (parentHierarchyLevel >= currentHierarchyLevel) {
+//       throw new Error("Cannot move a position to a lower-level position.");
+//     }
+//   }
+
+//   return update(id, {
+//     ...data,
+//     parentId: data.parentId === null ? undefined : data.parentId,
+//   });
+// };
+
+// // find level 
+// export const getPositionLevel = async (id: string): Promise<number> => {
+//   let level = 0;
+//   let parent = await getById(id);
+//   // db
+//   //   .select()
+//   //   .from(positions)
+//   //   .where(eq(positions.id, id))
+//   //   .limit(1);
+
+//   while (parent[0]?.parentId) {
+//     level++;
+//     parent = await getById(parent[0].parentId);
+//     // db
+//     //   .select()
+//     //   .from(positions)
+//     //   .where(eq(positions.id, parent[0].parentId))
+//     //   .limit(1);
+//   }
+
+//   return level;
+// };
+
 
 

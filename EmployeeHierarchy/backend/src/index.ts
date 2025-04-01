@@ -18,8 +18,6 @@ app.use(
 
 app.route("/positions", positionRoutes);
 
-
-
 app.onError((err, c) => {
   console.log("The error", err)
   if (err instanceof HTTPException) {

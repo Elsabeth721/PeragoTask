@@ -10,6 +10,7 @@ import {
   updatePosition,
   getChoices
 } from "../service/PositionService.js";
+import { getPagination, getTotalCount } from "../model/PositionModel.js";
 
 export const createController = async (c: Context) => {
   try {
@@ -109,4 +110,32 @@ export const getPositionsTreeController = async (c: Context) => {
     }
     throw new HTTPException(500, { message: "Unknown error" });
   }
+};
+
+
+export const getPaginationController = async (c: Context) => {
+  const page = parseInt(c.req.query('page') || '1', 10);
+  const limit = parseInt(c.req.query('limit') || '5', 10);
+  const offset = (page - 1) * limit;
+
+  const totalCount = await getTotalCount();
+  console.log("Raw total count result:", totalCount);
+
+  const totalRecords = Number(totalCount[0]?.count) || 0;
+  const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+  console.log("Final count:", totalRecords, "Total pages:", totalPages, "Current page:", page);
+
+  const paginatedData = await getPagination(limit, offset);
+  console.log("Paginated Data:", paginatedData);
+
+  return c.json({
+    data: paginatedData,
+    meta: {
+      total: totalRecords,
+      page,
+      limit,
+      totalPages,
+    },
+  });
 };

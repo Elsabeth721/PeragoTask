@@ -1,6 +1,5 @@
 import axios from "axios";
 import { Position, TreeNode } from "../interface/positionInterface";
-import { TreeNodeData } from "@mantine/core";
 
 const API_URL = "http://localhost:3001";
 
@@ -98,6 +97,13 @@ export const fetchPositionsTree = async (): Promise<TreeNode[]> => {
   //   throw new Error("An unexpected error occurred.");
   // }
 };
-
-
-
+export const fetchPositionsPagination = async (page: number, limit: number): Promise<{ data: Position[], meta: { total: number, page: number, limit: number, totalPages: number } }> => {
+  try {
+    const res = await axios.get<{ data: Position[], meta: { total: number, page: number, limit: number, totalPages: number } }>(`${API_URL}/positions/pagination?page=${page}&limit=${limit}`);
+    console.log("API Response:", res.data); // Check if data is correct
+    return res.data;
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw error;
+  }
+};

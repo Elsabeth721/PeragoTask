@@ -32,13 +32,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable}  antialiased `}
       >
         <Providers>
           <MantineProvider>
             <Notifications position="top-right" />
             <Navbar />
-            {children}
+            {children }
             <Footer />
           </MantineProvider>
         </Providers>
